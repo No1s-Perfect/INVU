@@ -1,0 +1,1 @@
+export const MONTHLY_PRICE = '543.750';
