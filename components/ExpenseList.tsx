@@ -3,7 +3,7 @@ import { Card } from "@rneui/themed";
 import { IExpenseList } from "../utils";
 import { useData } from "../utils/Hooks";
 import { AnimatedGIF } from "./AnimatedGIF";
-import { EMOJIS } from "../utils/constants";
+import { EMOJIS, TOTAL_AMOUNT } from "../utils/constants";
 
 export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
   const { globalData } = useData();
@@ -38,8 +38,10 @@ export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
   return (
     <View>
       <View style={{ alignItems: "center" }}>
-        {" "}
-        <Text>Total: ₡{Number(amount).toLocaleString("es-CR")}</Text>
+        <Text>
+          Total: ₡{Number(amount).toLocaleString("es-CR")} /{" "}
+          {TOTAL_AMOUNT.FOUR_YEARS.toLocaleString("es-CR")}
+        </Text>
       </View>
       <FlatList
         ListEmptyComponent={
@@ -66,8 +68,10 @@ export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
               <Card.Title>{transformDate(item.date)}</Card.Title>
               <Card.Divider />
               <View style={{ display: "flex", alignItems: "center" }}>
-                <Text>Amount: ₡{item.amount}</Text>
-                <Text>Number of files: {item.photoUri.length}</Text>
+                <Text>
+                  Amount: ₡{Number(item.amount).toLocaleString("es-CR")}
+                </Text>
+                <Text>Number of files: {item.photoUri.length.toString()}</Text>
               </View>
             </Card>
           </Pressable>
