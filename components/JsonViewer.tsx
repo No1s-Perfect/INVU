@@ -1,16 +1,17 @@
 import { View } from "react-native";
 import { useData } from "../utils/Hooks";
-import { Button } from "@rneui/themed";
 import Toast from "react-native-toast-message";
 import * as FileSystem from "expo-file-system";
 import { useState } from "react";
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
-
+import { Input, Button } from "@rneui/themed";
+import { FUNCTION_NAME, tool } from "../utils";
 export const JsonViewer = () => {
   const { globalData } = useData();
   const [fetching, setFetching] = useState<boolean>(false);
-
+  const [query, setQuery] = useState<string>("");
+  const [response, setResponse] = useState<string>("");
   const sendEmail = async () => {
     try {
       setFetching(true);
@@ -58,6 +59,18 @@ export const JsonViewer = () => {
     }
   };
 
+  const handleOnChange = (value: string) => setQuery(value);
+
+  const handleOnPress = async () => {
+    const res = await tool(query);
+    if (res.type === "function_call") {
+      if (res.name === FUNCTION_NAME.SAVE_IMAGES_TO_DEVICE_LIBRARY) {
+        await sendEmail();
+      }
+    }
+    if (res.type === "message") {
+    }
+  };
   return (
     <View
       style={{
@@ -68,15 +81,28 @@ export const JsonViewer = () => {
         display: "flex",
       }}
     >
+      <Input
+        onChangeText={handleOnChange}
+        placeholder={"Enter your query"}
+        value={fetching ? "Executing function..." : query}
+      />
       <Button
-        radius={"sm"}
-        type="solid"
-        buttonStyle={{ backgroundColor: "rgba(127, 220, 103, 1)" }}
-        onPress={sendEmail}
+        title="Send"
         loading={fetching}
-      >
-        Save to photos
-      </Button>
+        loadingProps={{ size: "small", color: "white" }}
+        buttonStyle={{
+          backgroundColor: "rgba(111, 202, 186, 1)",
+          borderRadius: 5,
+        }}
+        titleStyle={{ fontWeight: "bold", fontSize: 23 }}
+        containerStyle={{
+          marginHorizontal: 50,
+          height: 50,
+          width: 200,
+          marginVertical: 10,
+        }}
+        onPress={handleOnPress}
+      />
     </View>
   );
 };
