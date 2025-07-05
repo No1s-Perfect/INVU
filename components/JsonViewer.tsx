@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { View, Text, Keyboard } from "react-native";
 import { useData } from "../utils/Hooks";
 import Toast from "react-native-toast-message";
 import * as FileSystem from "expo-file-system";
@@ -6,7 +6,9 @@ import { useState } from "react";
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
 import { Input, Button } from "@rneui/themed";
-import { FUNCTION_NAME, tool } from "../utils";
+import { FUNCTION_NAME, responseBack, tool } from "../utils";
+import Markdown from "react-native-markdown-display";
+
 export const JsonViewer = () => {
   const { globalData } = useData();
   const [fetching, setFetching] = useState<boolean>(false);
@@ -56,16 +58,46 @@ export const JsonViewer = () => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setFetching(false);
+      setResponse("");
     }
   };
 
   const handleOnChange = (value: string) => setQuery(value);
 
+  const prettyGirlNames = () => {
+    return [
+      {
+        name: "Sofia Daniela Campos Alfaro",
+        age: "She is about to turn 27",
+        work: " She is a software engineer at MSFT",
+        description:
+          "Doesnt like cookies, but loves a chocolate cake from CAFE ROJO",
+        prevWork: ["Amazon", "Gambling company"],
+        random: "She is next to me right now, she is the pretty",
+      },
+    ];
+  };
   const handleOnPress = async () => {
     const res = await tool(query);
     if (res.type === "function_call") {
       if (res.name === FUNCTION_NAME.SAVE_IMAGES_TO_DEVICE_LIBRARY) {
         await sendEmail();
+      }
+      if (res.name === FUNCTION_NAME.GET_PRETTY_GIRL) {
+        try {
+          setFetching(true);
+          const data = prettyGirlNames();
+          const res2 = await responseBack(query, res, data);
+          if (res2.type === "message") {
+            const content = res2.content[0];
+            setResponse(content.type === "output_text" ? content.text : "");
+            Keyboard.dismiss();
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        } catch (e) {
+        } finally {
+          setFetching(false);
+        }
       }
     }
     if (res.type === "message") {
@@ -76,33 +108,38 @@ export const JsonViewer = () => {
       style={{
         backgroundColor: "white",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: response?.length > 0 ? "space-around" : "center",
         flex: 1,
         display: "flex",
       }}
     >
-      <Input
-        onChangeText={handleOnChange}
-        placeholder={"Enter your query"}
-        value={fetching ? "Executing function..." : query}
-      />
-      <Button
-        title="Send"
-        loading={fetching}
-        loadingProps={{ size: "small", color: "white" }}
-        buttonStyle={{
-          backgroundColor: "rgba(111, 202, 186, 1)",
-          borderRadius: 5,
-        }}
-        titleStyle={{ fontWeight: "bold", fontSize: 23 }}
-        containerStyle={{
-          marginHorizontal: 50,
-          height: 50,
-          width: 200,
-          marginVertical: 10,
-        }}
-        onPress={handleOnPress}
-      />
+      <View style={{ margin: 20 }}>
+        <Markdown>{response}</Markdown>
+      </View>
+      <View style={{ width: "100%", alignItems: "center" }}>
+        <Input
+          onChangeText={handleOnChange}
+          placeholder={"Enter your query"}
+          value={fetching ? "Executing function..." : query}
+        />
+        <Button
+          title="Send"
+          loading={fetching}
+          loadingProps={{ size: "small", color: "white" }}
+          buttonStyle={{
+            backgroundColor: "rgba(111, 202, 186, 1)",
+            borderRadius: 5,
+          }}
+          titleStyle={{ fontWeight: "bold", fontSize: 23 }}
+          containerStyle={{
+            marginHorizontal: 50,
+            height: 50,
+            width: 200,
+            marginVertical: 10,
+          }}
+          onPress={handleOnPress}
+        />
+      </View>
     </View>
   );
 };

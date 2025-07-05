@@ -1,12 +1,15 @@
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Card } from "@rneui/themed";
-import { IExpenseList } from "../utils";
+import { client, IExpenseList, model } from "../utils";
 import { useData } from "../utils/Hooks";
 import { AnimatedGIF } from "./AnimatedGIF";
 import { EMOJIS, TOTAL_AMOUNT } from "../utils/constants";
+import { useEffect, useState } from "react";
+import { Information } from "./Information";
 
 export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
   const { globalData } = useData();
+  const [msg, setMsg] = useState<string>("");
   const transformDate = (date: string) => {
     const months = [
       "January",
@@ -35,15 +38,38 @@ export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
     (acc, current): number => (acc += current.amount),
     0
   );
+
+  const getMessage = async () => {
+    const res = await client.responses.create({
+      model,
+      input: [
+        {
+          role: "system",
+          content: `I am making a savings for a house, 
+                    the total amount I need is ${TOTAL_AMOUNT.FOUR_YEARS.toLocaleString(
+                      "es-CR"
+                    )} CRC 
+                    and I have ${Number(amount).toLocaleString("es-CR")} CRC.
+                    Keep it simple, less than 20 words, you can use emojis.
+                    Can you give an optimistic message for me, my name is David`,
+        },
+      ],
+    });
+    setMsg(res.output_text);
+  };
+
+  useEffect(() => {
+    getMessage().then();
+  }, []);
   return (
     <View>
-      <View style={{ alignItems: "center" }}>
-        <Text>
-          Total: ₡{Number(amount).toLocaleString("es-CR")} /{" "}
-          {TOTAL_AMOUNT.FOUR_YEARS.toLocaleString("es-CR")}
-        </Text>
-      </View>
+      <Information
+        amount={amount}
+        msg={msg}
+        numberOfPayments={globalData.length}
+      />
       <FlatList
+        contentContainerStyle={{ paddingBottom: 150 }} // 👈 add extra space at the bottom
         ListEmptyComponent={
           <AnimatedGIF
             url={require("../assets/empty.gif")}
