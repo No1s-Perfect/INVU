@@ -88,6 +88,7 @@ export const JsonViewer = () => {
   };
   const handleOnPress = async () => {
     try {
+      setFetching(true);
       const res = await tool(query, isEnabled ? gpt4oMini : gpt4_1);
       if (res.type === "function_call") {
         if (res.name === FUNCTION_NAME.SAVE_IMAGES_TO_DEVICE_LIBRARY) {
@@ -95,7 +96,6 @@ export const JsonViewer = () => {
         }
         if (res.name === FUNCTION_NAME.GET_PRETTY_GIRL) {
           try {
-            setFetching(true);
             const data = prettyGirlNames();
             const res2 = await responseBack(query, res, data);
             if (res2.type === "message") {
@@ -106,7 +106,6 @@ export const JsonViewer = () => {
             }
           } catch (e) {
           } finally {
-            setFetching(false);
             setError(false);
           }
         }
@@ -116,6 +115,8 @@ export const JsonViewer = () => {
     } catch (e) {
       console.log(e, "error in handleOnPress");
       setError(true);
+    } finally {
+      setFetching(false);
     }
   };
   return (
