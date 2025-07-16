@@ -3,7 +3,10 @@ import {
   ResponseInput,
   ResponseOutputItem,
 } from "openai/resources/responses/responses.js";
-export const model = "gpt-4o";
+export const model = "gpt-4o-mini";
+export const gpt4o = "gpt-4o";
+export const gpt4_1 = "gpt-4.1";
+export const gpt4oMini = "gpt-4o-mini";
 export const client = new AzureOpenAI({
   apiKey: process.env.API_KEY,
   apiVersion: "2025-03-01-preview",
@@ -14,7 +17,10 @@ export const FUNCTION_NAME = {
   SAVE_IMAGES_TO_DEVICE_LIBRARY: "save_images_to_device_library",
   GET_PRETTY_GIRL: "get_pretty_girl",
 };
-export const tool = async (content: string): Promise<ResponseOutputItem> => {
+export const tool = async (
+  content: string,
+  model?: string
+): Promise<ResponseOutputItem> => {
   const response = await client.responses.create({
     model,
     input: [{ role: "user", content }],

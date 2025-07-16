@@ -5,8 +5,15 @@ import * as FileSystem from "expo-file-system";
 import { useState } from "react";
 import * as Haptics from "expo-haptics";
 import * as MediaLibrary from "expo-media-library";
-import { Input, Button } from "@rneui/themed";
-import { FUNCTION_NAME, responseBack, tool } from "../utils";
+import { Input, Button, Switch } from "@rneui/themed";
+import {
+  FUNCTION_NAME,
+  gpt4_1,
+  gpt4o,
+  gpt4oMini,
+  responseBack,
+  tool,
+} from "../utils";
 import Markdown from "react-native-markdown-display";
 
 export const JsonViewer = () => {
@@ -14,6 +21,8 @@ export const JsonViewer = () => {
   const [fetching, setFetching] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
   const [response, setResponse] = useState<string>("");
+  const [error, setError] = useState<boolean>(false);
+  const [isEnabled, setIsEnabled] = useState<boolean>(false);
   const sendEmail = async () => {
     try {
       setFetching(true);
@@ -71,36 +80,42 @@ export const JsonViewer = () => {
         age: "She is about to turn 27",
         work: " She is a software engineer at MSFT",
         description:
-          "Doesnt like cookies, but loves a chocolate cake from CAFE ROJO",
+          "Doesnt like cookies and white bread, but loves a chocolate cake from CAFE ROJO",
         prevWork: ["Amazon", "Gambling company"],
         random: "She is next to me right now, she is the pretty",
       },
     ];
   };
   const handleOnPress = async () => {
-    const res = await tool(query);
-    if (res.type === "function_call") {
-      if (res.name === FUNCTION_NAME.SAVE_IMAGES_TO_DEVICE_LIBRARY) {
-        await sendEmail();
-      }
-      if (res.name === FUNCTION_NAME.GET_PRETTY_GIRL) {
-        try {
-          setFetching(true);
-          const data = prettyGirlNames();
-          const res2 = await responseBack(query, res, data);
-          if (res2.type === "message") {
-            const content = res2.content[0];
-            setResponse(content.type === "output_text" ? content.text : "");
-            Keyboard.dismiss();
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      const res = await tool(query, isEnabled ? gpt4oMini : gpt4_1);
+      if (res.type === "function_call") {
+        if (res.name === FUNCTION_NAME.SAVE_IMAGES_TO_DEVICE_LIBRARY) {
+          await sendEmail();
+        }
+        if (res.name === FUNCTION_NAME.GET_PRETTY_GIRL) {
+          try {
+            setFetching(true);
+            const data = prettyGirlNames();
+            const res2 = await responseBack(query, res, data);
+            if (res2.type === "message") {
+              const content = res2.content[0];
+              setResponse(content.type === "output_text" ? content.text : "");
+              Keyboard.dismiss();
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+          } catch (e) {
+          } finally {
+            setFetching(false);
+            setError(false);
           }
-        } catch (e) {
-        } finally {
-          setFetching(false);
         }
       }
-    }
-    if (res.type === "message") {
+      if (res.type === "message") {
+      }
+    } catch (e) {
+      console.log(e, "error in handleOnPress");
+      setError(true);
     }
   };
   return (
@@ -139,6 +154,7 @@ export const JsonViewer = () => {
           }}
           onPress={handleOnPress}
         />
+        {error && <Switch onValueChange={setIsEnabled} value={isEnabled} />}
       </View>
     </View>
   );

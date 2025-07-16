@@ -40,22 +40,26 @@ export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
   );
 
   const getMessage = async () => {
-    const res = await client.responses.create({
-      model,
-      input: [
-        {
-          role: "system",
-          content: `I am making a savings for a house, 
+    try {
+      const res = await client.responses.create({
+        model,
+        input: [
+          {
+            role: "system",
+            content: `I am making a savings for a house, 
                     the total amount I need is ${TOTAL_AMOUNT.FOUR_YEARS.toLocaleString(
                       "es-CR"
                     )} CRC 
                     and I have ${Number(amount).toLocaleString("es-CR")} CRC.
                     Keep it simple, less than 20 words, you can use emojis.
                     Can you give an optimistic message for me, my name is David`,
-        },
-      ],
-    });
-    setMsg(res.output_text);
+          },
+        ],
+      });
+      setMsg(res.output_text);
+    } catch (e) {
+      console.error("Error fetching message:", e);
+    }
   };
 
   useEffect(() => {
