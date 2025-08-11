@@ -7,6 +7,7 @@ export const model = "gpt-4o-mini";
 export const gpt4o = "gpt-4o";
 export const gpt4_1 = "gpt-4.1";
 export const gpt4oMini = "gpt-4o-mini";
+export const gpt5Mini = "gpt-5-mini";
 export const client = new AzureOpenAI({
   apiKey: process.env.API_KEY,
   apiVersion: "2025-03-01-preview",

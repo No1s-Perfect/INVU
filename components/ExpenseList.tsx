@@ -1,6 +1,6 @@
 import { View, Text, FlatList, Pressable } from "react-native";
 import { Card } from "@rneui/themed";
-import { client, IExpenseList, model } from "../utils";
+import { client, gpt5Mini, IExpenseList } from "../utils";
 import { useData } from "../utils/Hooks";
 import { AnimatedGIF } from "./AnimatedGIF";
 import { EMOJIS, TOTAL_AMOUNT } from "../utils/constants";
@@ -42,7 +42,7 @@ export const ExpenseList = ({ search, handleLongPress }: IExpenseList) => {
   const getMessage = async () => {
     try {
       const res = await client.responses.create({
-        model,
+        model: gpt5Mini,
         input: [
           {
             role: "system",
